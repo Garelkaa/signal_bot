@@ -1,14 +1,11 @@
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy import NUMERIC, Column, Float, Integer, String, Boolean, BigInteger, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from datetime import datetime
-from sqlalchemy.orm import relationship
 
 
-
-# Базовый класс для всех моделей
 class Base(DeclarativeBase):
     @declared_attr
     def __tablename__(cls) -> str:
@@ -22,7 +19,7 @@ class User(Base):
 
     uid = Column(BigInteger(), nullable=False, unique=True)
     uname = Column(String(50), nullable=True)
-    status = Column(String(), default="en")
+    status = Column(String(), default="user")
     created_at = Column(DateTime(), default=datetime.now())
     
 class Refferer(Base):

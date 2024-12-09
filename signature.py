@@ -8,8 +8,6 @@ import config as cfg
 from db.models import CreateDatabase
 from db.requests import UserReq
 
-from config import settings
-
 class BotSettings:
     def __init__(self):
         self.bot = Bot(token=cfg.TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
