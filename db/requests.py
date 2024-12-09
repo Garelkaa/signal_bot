@@ -2,7 +2,7 @@ from asyncio import Lock
 import asyncio
 import datetime
 from db.models import User, Refferer
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import joinedload
 
@@ -41,4 +41,32 @@ class UserReq:
                 
                 
                 return True if result.scalar() else False
+            
+    async def get_user_status(self, uid: int):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(
+                    select(User.status).filter(User.uid == uid)
+                )
+                
+                
+                return True if result.scalar() == 'admin' else False
+            
+    async def get_user_count(self):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(
+                    select(func.count(User.uid))  # Подсчитываем количество пользователей
+                )
+                return result.scalar()  # Возвращаем результат
+
+            
+    async def get_all_users(self):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(
+                    select(User.uid, User.uname)  # Выбираем нужные поля
+                )
+                return [dict(uid=row.uid, uname=row.uname) for row in result]
+
                 
