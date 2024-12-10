@@ -31,7 +31,7 @@ class Client:
         if len(command_parts) == 1:
             await m.answer("❗️ Регистрация возможна только по ссылке, выданной администратором.")
         else:
-            code = await self.db.get_ref_code(command_parts[1])
+            code = await self.db.get_ref_code("t.me/onewintestbot?start=" + command_parts[1])
             if code:
                 instructions = (
                     "👋 Добро пожаловать в SIGNAL BOT MINES!\n\n"

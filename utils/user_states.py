@@ -6,6 +6,12 @@ class FSMUserReg(StatesGroup):
     
 class FSMAddCodeRefAdmin(StatesGroup):
     code = State()
+    select = State()
+    
+class FSMManageAdmins(StatesGroup):
+    add = State()
+    delete = State()
+    edit = State()
     
 class FSMAddOrKickAdmin(StatesGroup):
     uid = State()

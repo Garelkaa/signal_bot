@@ -27,6 +27,7 @@ class Refferer(Base):
     
     name = Column(String(), nullable=False, unique=True)
     count_people = Column(Integer(), default=0)
+    type = Column(String(), nullable=False)
     
 
 class CreateDatabase:
