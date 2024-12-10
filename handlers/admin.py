@@ -126,7 +126,7 @@ class Admin:
     async def add_link_start(self, call: types.CallbackQuery, state: FSMContext):
         ref_type = call.data.split(":")[1]
         await state.update_data(ref_type=ref_type)
-        await FSMAddCodeRefAdmin.code.set()
+        await state.set_state(FSMAddCodeRefAdmin.code)
         await call.message.answer(f"Введите название новой ссылки для типа '{ref_type}':")
         await call.answer()
 

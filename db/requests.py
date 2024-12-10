@@ -115,6 +115,16 @@ class UserReq:
                 user.status = "admin"
                 await session.commit()
                 return True
+            
+    async def get_random_casino_link(self):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(
+                    select(Refferer.name)
+                    .filter(Refferer.type == "casino")
+                    .order_by(func.random())
+                )
+                return result.scalar_one_or_none()
 
     async def get_all_admins(self):
         async with self.lock:
