@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра Мины</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2a;
+            color: white;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .form-section, .game-section {
+            display: none;
+        }
+
+        .form-section.active, .game-section.active {
+            display: block;
+        }
+
+        input {
+            margin: 10px 0;
+            padding: 10px;
+            width: calc(100% - 20px);
+            border: none;
+            border-radius: 5px;
+            background-color: #2c2c3c;
+            color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: linear-gradient(45deg, #007bff, #00c6ff);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 5px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .game-cell {
+            width: 60px;
+            height: 60px;
+            background-color: #2b2b3b;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.5s, background-color 0.5s;
+        }
+
+        .game-cell.flipped {
+            background-color: #3b59aa;
+            transform: scale(1.1);
+            color: white;
+        }
+
+        .game-cell.star {
+            background-color: #3b59aa !important;
+            color: #ffeb3b;
+            font-size: 24px;
+            animation: glow 0.8s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 0 10px #ffeb3b;
+            }
+            100% {
+                box-shadow: 0 0 20px #ffeb3b;
+            }
+        }
+
+        .game-title {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .options-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #2c2c3c;
+            color: white;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-section active" id="form-section">
+            <h2>Приветствуем вас в игре Мины!</h2>
+            <input type="text" id="user-id" placeholder="Введите ваш уникальный ID для пополнения" />
+            <input type="number" id="deposit-amount" placeholder="Введите сумму пополнения (₽)" />
+            <input type="number" id="bet-amount" placeholder="Введите сумму ставки (₽)" />
+            <button id="next-button">Перейти к игре</button>
+        </div>
+
+        <!-- Game Section -->
+        <div class="game-section" id="game-section">
+            <h2 class="game-title">Игра: Мины</h2>
+            <div class="options-container">
+                <label for="traps">Выберите количество ловушек:</label>
+                <select id="traps">
+                    <option value="1">1 ловушка (очень легко)</option>
+                    <option value="3">3 ловушки (легко)</option>
+                    <option value="5">5 ловушек (средне)</option>
+                    <option value="7">7 ловушек (сложно)</option>
+                </select>
+            </div>
+            <div class="game-grid" id="game-grid"></div>
+            <button id="start-game">Начать игру</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const formSection = document.getElementById("form-section");
+            const gameSection = document.getElementById("game-section");
+            const gameGrid = document.getElementById("game-grid");
+            const nextButton = document.getElementById("next-button");
+            const startGameButton = document.getElementById("start-game");
+            const trapsSelect = document.getElementById("traps");
+
+            const starCounts = {
+                1: 10,
+                3: 5,
+                5: 4,
+                7: 3
+            };
+
+            nextButton.addEventListener("click", () => {
+                const userId = document.getElementById("user-id").value;
+                const depositAmount = document.getElementById("deposit-amount").value;
+                const betAmount = document.getElementById("bet-amount").value;
+
+                if (!userId || !depositAmount || !betAmount) {
+                    alert("Пожалуйста, заполните все поля!");
+                    return;
+                }
+
+                formSection.classList.remove("active");
+                gameSection.classList.add("active");
+                createGameGrid();
+            });
+
+            startGameButton.addEventListener("click", () => {
+                createGameGrid();
+                const cells = document.querySelectorAll(".game-cell");
+                const trapCount = parseInt(trapsSelect.value);
+                const starCount = starCounts[trapCount];
+                const starIndexes = generateRandomIndexes(cells.length, starCount);
+
+                let delay = 0;
+                starIndexes.forEach(index => {
+                    setTimeout(() => {
+                        const cell = cells[index];
+                        cell.classList.add("flipped", "star");
+                        cell.textContent = "⭐";
+                    }, delay);
+                    delay += 1000; // Increment delay to simulate thinking process
+                });
+            });
+
+            function createGameGrid() {
+                gameGrid.innerHTML = "";
+                for (let i = 0; i < 25; i++) {
+                    const cell = document.createElement("div");
+                    cell.classList.add("game-cell");
+                    gameGrid.appendChild(cell);
+                }
+            }
+
+            function generateRandomIndexes(totalCells, count) {
+                const indexes = [];
+                while (indexes.length < count) {
+                    const randomIndex = Math.floor(Math.random() * totalCells);
+                    if (!indexes.includes(randomIndex)) {
+                        indexes.push(randomIndex);
+                    }
+                }
+                return indexes;
+            }
+        });
+    </script>
+</body>
+</html>
