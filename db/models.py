@@ -20,6 +20,7 @@ class User(Base):
     uid = Column(BigInteger(), nullable=False, unique=True)
     uname = Column(String(50), nullable=True)
     status = Column(String(), default="user")
+    warning = Column(Boolean(), default=False)
     created_at = Column(DateTime(), default=datetime.now())
     
 class Refferer(Base):

@@ -30,6 +30,25 @@ class UserReq:
             async with self.db_session_maker() as session:
                 result = await session.execute(select(User).where(User.uid == uid))
                 return result.scalar() is not None
+            
+    async def user_warning(self, uid: int) -> bool:
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(select(User.warning).where(User.uid == uid))
+                return True if result.scalar() == True else False
+    
+    async def set_warning(self, uid: int) -> bool:
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(
+                    select(User).filter(User.uid == uid)
+                )
+                user = result.scalar_one_or_none()
+                
+                user.warning = True
+                await session.commit()
+                return True
+                
 
     
     async def get_ref_code(self, name: str):

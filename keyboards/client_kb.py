@@ -2,6 +2,20 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 class ReplyKb:
     @staticmethod
+    async def warning(casino_link, webapp: str):
+        buttons = [
+            ("Регистрация 🔗", casino_link),
+        ]
+
+        builder = InlineKeyboardBuilder()
+        for text, url in buttons:
+            builder.button(text=text, url=url)
+        
+        builder.button(text="Я зарегистрировался ✅", web_app={"url": webapp})
+
+        return builder.adjust(1).as_markup()
+    
+    @staticmethod
     async def accept(casino_link):
         buttons = [
             ("Регистрация 🔗", casino_link),
@@ -38,6 +52,27 @@ class ReplyKb:
         # Add the web app button
         builder.button(
             text="🌟 ПОЛУЧИТЬ СИГНАЛ 🌟", web_app={"url": web_app_url}
+        )
+
+        return builder.adjust(2).as_markup()
+    
+    @staticmethod
+    async def main_menu_warning(casino_link: str):
+        buttons = [
+            ("📖 Инструкция", "instruction"),
+        ]
+
+        builder = InlineKeyboardBuilder()
+
+        # Add standard buttons
+        for text, callback_data in buttons:
+            builder.button(text=text, callback_data=callback_data)
+        
+        builder.button(text="Регистрация 🔗", url=f"{casino_link}")
+
+        # Add the web app button
+        builder.button(
+            text="🌟 ПОЛУЧИТЬ СИГНАЛ 🌟", callback_data="warning_handler"
         )
 
         return builder.adjust(2).as_markup()
