@@ -3,7 +3,7 @@ from aiogram.types import FSInputFile
 from signature import BotSettings
 from keyboards.client_kb import ReplyKb as kb
 
-REQUIRED_CHANNEL = "@megaslottt"  # Замените на имя вашего канала
+REQUIRED_CHANNEL = "@bbytestsignalbot"  # Замените на имя вашего канала
 
 class Client:
     def __init__(self, bot: BotSettings):
@@ -17,6 +17,7 @@ class Client:
         self.dp.callback_query(F.data == "acknowledge_instructions")(self.acknowledge_instructions_handler)
         self.dp.callback_query(F.data == "check_subscription")(self.check_subscription_handler)
         self.dp.callback_query(F.data == "instruction")(self.instruction)
+        self.dp.callback_query(F.data == "registration")(self.registration)
         self.dp.callback_query(F.data == "warning_handler")(self.warning_handler)
 
     async def check_subscription(self, user_id):
@@ -282,6 +283,46 @@ class Client:
 
         await self.bot.send_photo(cq.from_user.id, photo=instructions_photo, caption=instructions, parse_mode="HTML")
         await cq.answer()
+
+    async def check_subscription_handler(self, cq: types.CallbackQuery):
+        is_subscribed = await self.check_subscription(cq.from_user.id)
+
+        if is_subscribed:
+            await cq.message.answer("✅ Вы успешно подписаны на канал и можете продолжить использование бота! Введите еще раз <code>/start</code>")
+        else:
+            await cq.message.answer("❌ Вы не подписаны на канал. Подпишитесь для использования бота.")
+            
+    async def registration(self, cq: types.CallbackQuery):
+        is_subscribed = await self.check_subscription(cq.from_user.id)
+        random_casino_link = await self.db.get_random_casino_link()
+
+        if not is_subscribed:
+            await cq.message.delete()
+            await self.ask_for_subscription(cq.message)
+            return
+        instructions_image_path = "photo/reg.jpg"
+        instructions_photo = FSInputFile(instructions_image_path)
+
+        instructions = (
+            "❕<b>1. Зарегистрируйтесь в букмекерской конторе <a href='https://1wqydy.top/?open=register&p=a993'>1WIN</a> (ссылка снизу 👇)</b>\n"
+            "Если не открывается воспользуйтесь любым бесплатным ВПН сервисом, к примеру: Planet VPN, Vpnify, FREE VPN fast. <b>Регион - Швеция</b>\n"
+            "- ❗️Введите промокод - <code>Florin12</code> - он даст +500% к депозиту❗️\n"
+            "\n"
+            "-❗️<b>Без регистрации и промокода доступ к использованию бота будет закрыт</b>❗️\n"
+        )
+
+        await cq.message.delete()
+        await self.bot.send_photo(
+            chat_id=cq.message.chat.id,
+            photo=instructions_photo,
+            caption=(
+                instructions
+            ), 
+            
+            reply_markup=await kb.accept(random_casino_link)
+        )
+        await cq.answer()
+        
 
     async def check_subscription_handler(self, cq: types.CallbackQuery):
         is_subscribed = await self.check_subscription(cq.from_user.id)

@@ -47,7 +47,7 @@ class ReplyKb:
         for text, callback_data in buttons:
             builder.button(text=text, callback_data=callback_data)
         
-        builder.button(text="Регистрация 🔗", url=f"{casino_link}")
+        builder.button(text="Регистрация 🔗", callback_data="registration")
 
         # Add the web app button
         builder.button(
@@ -68,7 +68,7 @@ class ReplyKb:
         for text, callback_data in buttons:
             builder.button(text=text, callback_data=callback_data)
         
-        builder.button(text="Регистрация 🔗", url=f"{casino_link}")
+        builder.button(text="Регистрация 🔗", callback_data="registration")
 
         # Add the web app button
         builder.button(
