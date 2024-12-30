@@ -3,7 +3,7 @@ from aiogram.types import FSInputFile
 from signature import BotSettings
 from keyboards.client_kb import ReplyKb as kb
 
-REQUIRED_CHANNEL = "@megaslottt"  
+REQUIRED_CHANNEL = "@testworkerchannel"  
 
 class Client:
     def __init__(self, bot: BotSettings):
@@ -112,12 +112,26 @@ class Client:
                     reply_markup=await kb.main_menu_warning(f"{random_casino_link}")
                 )
                 return
+        else:
+            
 
-        command_parts = m.text.split(maxsplit=1)
-        ref_code = None
+            command_parts = m.text.split(maxsplit=1)
+            ref_code = None
 
-        if len(command_parts) > 1:
-            ref_code = await self.db.get_ref_code("t.me/onewintestbot?start=" + command_parts[1])
+            if len(command_parts) > 1:
+                ref_code = await self.db.get_ref_code("t.me/signltestbot?start=" + command_parts[1])
+                print(ref_code)
+                await self.db.add_user(
+                    uid=m.from_user.id,
+                    uname=m.from_user.username if m.from_user.username else m.from_user.first_name,
+                    refferer_link=ref_code
+                )
+            else: 
+                await self.db.add_user(
+                    uid=m.from_user.id,
+                    uname=m.from_user.username if m.from_user.username else m.from_user.first_name,
+                    refferer_link=2
+                )
         
         instructions_image_path = "photo/inst.jpg"
         instructions_photo = FSInputFile(instructions_image_path)
@@ -149,6 +163,8 @@ class Client:
             parse_mode="HTML",
             reply_markup=await kb.registration()
         )
+    
+    
     async def confirm_registration_handler(self, cq: types.CallbackQuery):
         is_subscribed = await self.check_subscription(cq.from_user.id)
 
@@ -157,16 +173,9 @@ class Client:
             await self.ask_for_subscription(cq.message)
             return
 
-        user_exists = await self.db.user_exists(cq.from_user.id)
         random_casino_link = await self.db.get_random_casino_link()
         instructions_image_path = "photo/reg.jpg"
         instructions_photo = FSInputFile(instructions_image_path)
-
-        if not user_exists:
-            await self.db.add_user(
-                uid=cq.from_user.id,
-                uname=cq.from_user.username if cq.from_user.username else cq.from_user.first_name
-            )
 
         instructions = (
             "❕<b>1. Зарегистрируйтесь в букмекерской конторе <a href='https://1wsewz.com/?open=register&p=cygp'>1WIN</a> (ссылка снизу 👇)</b>\n"
@@ -327,6 +336,6 @@ class Client:
         is_subscribed = await self.check_subscription(cq.from_user.id)
 
         if is_subscribed:
-            await cq.message.answer("✅ Вы успешно подписаны на канал и можете продолжить использование бота! Введите еще раз <code>/start</code>")
+            await cq.message.answer("✅ Вы успешно подписаны на канал и можете продолжить использование бота! Введите еще раз <code>/start</code> ЕСЛИ ВЫ РЕГИСТРИРОВАЛИСЬ ПО РЕФЕРАЛЬНОЙ ССЫЛКЕ ПЕРЕЙДИТЕ ПО НЕЙ ЕЩË РАЗ!!!!")
         else:
             await cq.message.answer("❌ Вы не подписаны на канал. Подпишитесь для использования бота.")

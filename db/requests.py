@@ -1,6 +1,4 @@
 from asyncio import Lock
-import asyncio
-import datetime
 from db.models import User, Refferer
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -13,11 +11,11 @@ class UserReq:
         self.db_session_maker = db_session_maker
         self.lock = Lock()
 
-    async def add_user(self, uid: int, uname: str):
+    async def add_user(self, uid: int, uname: str, refferer_link: int = 0):
         async with self.lock:
             async with self.db_session_maker() as session:
                 try:
-                    new_user = User(uid=uid, uname=uname)
+                    new_user = User(uid=uid, uname=uname, refferer_link=refferer_link)
                     session.add(new_user)
                     await session.commit()
                     return True
@@ -55,11 +53,11 @@ class UserReq:
         async with self.lock:
             async with self.db_session_maker() as session:
                 result = await session.execute(
-                    select(Refferer.name).filter(Refferer.name == name)
+                    select(Refferer.id).filter(Refferer.name == name)
                 )
                 
                 
-                return True if result.scalar() else False
+                return result.scalar()
             
     async def get_user_status(self, uid: int):
         async with self.lock:
@@ -88,6 +86,25 @@ class UserReq:
                 )
                 return [dict(uid=row.uid, uname=row.uname) for row in result]
             
+    async def get_all_referer_with_users(self):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                query = (
+                    select(Refferer.name, Refferer.count_people, User.uname)
+                    .join(User, User.refferer_link == Refferer.id, isouter=True)
+                )
+                result = await session.execute(query)
+                data = {}
+                for row in result:
+                    ref_name = row.name
+                    user_name = row.uname or "Нет пользователей"
+
+                    if ref_name not in data:
+                        data[ref_name] = {"count_people": row.count_people, "users": []}
+
+                    data[ref_name]["users"].append(user_name)
+                return data
+
     async def get_referer_links(self, ref_type: str):
         async with self.lock:
             async with self.db_session_maker() as session:

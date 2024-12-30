@@ -23,6 +23,7 @@ class AdminReplyKb:
         buttons = [
             ("Ссылка для бота", "bot_link"),
             ("Ссылка для казино", "casino_link"),
+            ("История переходов в бот", "get_history_ref"),
 
         ]
 
