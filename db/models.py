@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, BigInteger, DateTime
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from datetime import datetime
 
@@ -20,16 +20,23 @@ class User(Base):
     uid = Column(BigInteger(), nullable=False, unique=True)
     uname = Column(String(50), nullable=True)
     status = Column(String(), default="user")
-    refferer_link = Column(Integer(), ForeignKey('referer.id'), default=0)
     warning = Column(Boolean(), default=False)
     created_at = Column(DateTime(), default=datetime.now())
     
+
 class Refferer(Base):
     __tablename__ = 'referer'
     
     name = Column(String(), nullable=False, unique=True)
     count_people = Column(Integer(), default=0)
     type = Column(String(), nullable=False)
+
+
+class Ref1win(Base):
+    __tablename__ = '1win'
+    
+    uid = Column(BigInteger(), nullable=False, unique=True)
+    created_at = Column(DateTime(), default=datetime.now())
     
 
 class CreateDatabase:

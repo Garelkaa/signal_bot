@@ -1,21 +1,24 @@
 from asyncio import Lock
-from db.models import User, Refferer
+import asyncio
+import datetime
+from db.models import User, Refferer, Ref1win
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import joinedload
 
 from sqlalchemy.exc import IntegrityError
 
+
 class UserReq:
     def __init__(self, db_session_maker: async_sessionmaker) -> None:
         self.db_session_maker = db_session_maker
         self.lock = Lock()
 
-    async def add_user(self, uid: int, uname: str, refferer_link: int = 0):
+    async def add_user(self, uid: int, uname: str):
         async with self.lock:
             async with self.db_session_maker() as session:
                 try:
-                    new_user = User(uid=uid, uname=uname, refferer_link=refferer_link)
+                    new_user = User(uid=uid, uname=uname)
                     session.add(new_user)
                     await session.commit()
                     return True
@@ -23,18 +26,42 @@ class UserReq:
                     await session.rollback()
                     return False
                 
+
+    async def add_user_ref(self, uid: int):
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                resp = await session.execute(select(Ref1win).where(Ref1win.uid == uid))
+                user = resp.scalar_one_or_none()
+
+                if not user:
+                    new_ref = Ref1win(uid=uid)
+                    session.add(new_ref)
+                    await session.commit()
+                    return True
+                return False
+                
+
     async def user_exists(self, uid: int) -> bool:
         async with self.lock:
             async with self.db_session_maker() as session:
                 result = await session.execute(select(User).where(User.uid == uid))
                 return result.scalar() is not None
             
+    
+    async def check_user_ref(self, uid: int) -> bool:
+        async with self.lock:
+            async with self.db_session_maker() as session:
+                result = await session.execute(select(Ref1win).where(Ref1win.uid == uid))
+                return bool(result.scalar_one_or_none())
+            
+
     async def user_warning(self, uid: int) -> bool:
         async with self.lock:
             async with self.db_session_maker() as session:
                 result = await session.execute(select(User.warning).where(User.uid == uid))
                 return True if result.scalar() == True else False
     
+
     async def set_warning(self, uid: int) -> bool:
         async with self.lock:
             async with self.db_session_maker() as session:
@@ -53,11 +80,11 @@ class UserReq:
         async with self.lock:
             async with self.db_session_maker() as session:
                 result = await session.execute(
-                    select(Refferer.id).filter(Refferer.name == name)
+                    select(Refferer.name).filter(Refferer.name == name)
                 )
                 
                 
-                return result.scalar()
+                return True if result.scalar() else False
             
     async def get_user_status(self, uid: int):
         async with self.lock:
@@ -86,25 +113,6 @@ class UserReq:
                 )
                 return [dict(uid=row.uid, uname=row.uname) for row in result]
             
-    async def get_all_referer_with_users(self):
-        async with self.lock:
-            async with self.db_session_maker() as session:
-                query = (
-                    select(Refferer.name, Refferer.count_people, User.uname)
-                    .join(User, User.refferer_link == Refferer.id, isouter=True)
-                )
-                result = await session.execute(query)
-                data = {}
-                for row in result:
-                    ref_name = row.name
-                    user_name = row.uname or "Нет пользователей"
-
-                    if ref_name not in data:
-                        data[ref_name] = {"count_people": row.count_people, "users": []}
-
-                    data[ref_name]["users"].append(user_name)
-                return data
-
     async def get_referer_links(self, ref_type: str):
         async with self.lock:
             async with self.db_session_maker() as session:

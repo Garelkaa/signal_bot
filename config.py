@@ -1,13 +1,18 @@
-import os
-from dotenv import load_dotenv
-load_dotenv()
-TOKEN = os.getenv('TOKEN')
-LOGGING_LEVEL = 'DEBUG'
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_NAME = os.getenv("POSTGRES_NAME")
-POSTGRES_HOST = os.getenv("POSTGRES_HOST")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT")
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-def get_db_url() -> str:
-    return f'postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_NAME}'
+
+class Settings(BaseSettings):
+    TOKEN: str
+    LOGGING_LEVEL: str
+    DB_USER: str
+    DB_NAME: str
+    DB_PASSWORD: str
+    DB_HOST: str
+
+    def get_db_url(self) -> str:
+        return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}/{self.DB_NAME}'
+
+    model_config = SettingsConfigDict(env_file='.env')
+
+
+settings = Settings()
